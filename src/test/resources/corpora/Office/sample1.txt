@@ -1,0 +1,6 @@
+Office Documents Converter – Plain Text Test
+
+This is a basic plain text file used to test
+TXT → PDF conversion via LibreOffice / UNO.
+
+End of file.
