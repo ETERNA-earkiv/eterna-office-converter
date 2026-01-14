@@ -17,6 +17,7 @@ import org.roda.core.model.ModelService;
 import org.roda.core.plugins.Plugin;
 import org.roda.core.plugins.PluginException;
 import org.roda.core.plugins.base.conversion.AbstractConvertPlugin;
+import org.roda.core.storage.StorageService;
 import org.roda.core.util.CommandException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +51,15 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
     static {
 
+
         pluginParameters.put(RodaConstants.PLUGIN_PARAMS_REPRESENTATION_OR_DIP,
                 PluginParameter.getBuilder(RodaConstants.PLUGIN_PARAMS_REPRESENTATION_OR_DIP, "Outcome",
-                        PluginParameterType.CONVERSION)
+                                PluginParameterType.CONVERSION)
                         .withDescription(
                                 "A conversion can create a representation or a dissemination. Please choose which option to output")
                         .build());
     }
+
 
     public OfficeDocumentsConverter() {
         super();
@@ -103,6 +106,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         return this.orderParameters(this.getDefaultParameters());
     }
 
+
     @Override
     protected List<PluginParameter> orderParameters(Map<String, PluginParameter> params) {
         return new ArrayList<>(params.values());
@@ -125,6 +129,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         super.setParameterValues(parameters);
     }
 
+
     @Override
     public boolean areParameterValuesValid() {
 
@@ -142,12 +147,12 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
     }
 
     @Override
-    public Report beforeAllExecute(IndexService index, ModelService model) {
+    public Report beforeAllExecute(IndexService index, ModelService model, StorageService storage) {
         return new Report();
     }
 
     @Override
-    public Report afterAllExecute(IndexService index, ModelService model) {
+    public Report afterAllExecute(IndexService index, ModelService model, StorageService storage) {
         return new Report();
     }
 
@@ -182,6 +187,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         return Arrays.asList(excluded.split("\\s+"));
     }
 
+
     @Override
     public String executePlugin(Path inputPath, Path outputPath, String fileFormat)
             throws IOException, CommandException {
@@ -196,19 +202,15 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             throw new CommandException("Output format was not set.");
         }
 
-        /*
-         * ------------------------------------------------------------------
+        /* ------------------------------------------------------------------
          * 1. Resolve UNO container name automatically
-         * ------------------------------------------------------------------
-         */
+         * ------------------------------------------------------------------ */
         String unoContainer = resolveUnoContainer();
         LOGGER.info("Using UNO container: {}", unoContainer);
 
-        /*
-         * ------------------------------------------------------------------
+        /* ------------------------------------------------------------------
          * 2. Prepare shared /tmp working directory
-         * ------------------------------------------------------------------
-         */
+         * ------------------------------------------------------------------ */
         Path sharedTmp = Paths.get("/tmp/roda-converter");
         Files.createDirectories(sharedTmp);
 
@@ -217,11 +219,9 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
         Files.copy(inputPath, containerInput, StandardCopyOption.REPLACE_EXISTING);
 
-        /*
-         * ------------------------------------------------------------------
+        /* ------------------------------------------------------------------
          * 3. PDF/A handling
-         * ------------------------------------------------------------------
-         */
+         * ------------------------------------------------------------------ */
         String unoFormat = outputFormat;
         List<String> exportOptions = new ArrayList<>();
 
@@ -236,20 +236,20 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         }
 
         Path containerOutput = sharedTmp.resolve(
-                "converted_" + System.nanoTime() + "." + unoFormat);
+                "converted_" + System.nanoTime() + "." + unoFormat
+        );
 
-        /*
-         * ------------------------------------------------------------------
+        /* ------------------------------------------------------------------
          * 4. Build docker exec unoconvert command
-         * ------------------------------------------------------------------
-         */
+         * ------------------------------------------------------------------ */
         List<String> command = new ArrayList<>();
         command.addAll(List.of(
                 "docker", "exec", unoContainer,
                 "unoconvert",
                 "--host", host,
                 "--port", port,
-                "--convert-to", unoFormat));
+                "--convert-to", unoFormat
+        ));
 
         if (!exportOptions.isEmpty()) {
             command.add("--filter-options");
@@ -265,7 +265,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 .redirectErrorStream(true)
                 .start();
 
-        String processOutput = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        String processOutput =
+                new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
         int exitCode;
         try {
@@ -280,11 +281,9 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             throw new CommandException("Unoconvert failed:\n" + processOutput);
         }
 
-        /*
-         * ------------------------------------------------------------------
+        /* ------------------------------------------------------------------
          * 5. Copy result back to RODA output path
-         * ------------------------------------------------------------------
-         */
+         * ------------------------------------------------------------------ */
         Files.copy(containerOutput, outputPath, StandardCopyOption.REPLACE_EXISTING);
 
         Files.deleteIfExists(containerInput);
@@ -299,14 +298,17 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             Process p = new ProcessBuilder(
                     "docker", "ps",
                     "--filter", "ancestor=philiplehmann/unoserver",
-                    "--format", "{{.Names}}").start();
+                    "--format", "{{.Names}}"
+            ).start();
 
             List<String> lines = new String(
-                    p.getInputStream().readAllBytes(), StandardCharsets.UTF_8).lines().toList();
+                    p.getInputStream().readAllBytes(), StandardCharsets.UTF_8
+            ).lines().toList();
 
             if (lines.isEmpty()) {
                 throw new CommandException(
-                        "UNO server container not running (philiplehmann/unoserver)");
+                        "UNO server container not running (philiplehmann/unoserver)"
+                );
             }
 
             return lines.get(0); // first matching container
@@ -315,6 +317,9 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             throw new CommandException("Failed to resolve UNO container", e);
         }
     }
+
+
+
 
     private String getEnvOrDefault(String key, String def) {
         String v = System.getenv(key);
