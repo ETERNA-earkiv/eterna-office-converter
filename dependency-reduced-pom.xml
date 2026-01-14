@@ -155,15 +155,6 @@
       </exclusions>
     </dependency>
   </dependencies>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>zookeeper-jute</artifactId>
-        <version>3.9.3</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <properties>
     <build.date>${maven.build.timestamp}</build.date>
     <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>

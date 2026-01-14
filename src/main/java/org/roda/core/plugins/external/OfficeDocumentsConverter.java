@@ -67,8 +67,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
     @Override
     public void init() throws PluginException {
-//        LOGGER.info("OfficeDocumentsConverter initialized");
-        System.out.println("OfficeDocumentsConverter initialized");
+        LOGGER.info("OfficeDocumentsConverter initialized");
     }
 
     @Override
@@ -178,6 +177,16 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
     public Map<String, List<String>> getMimetypeToExtension() {
         return FileFormatUtils.getMimetypeToExtension("office-documents-converter");
     }
+
+    public List<String> getExcludedExtensions() {
+        String excluded = RodaCoreFactory.getRodaConfigurationAsString(
+                "core", "tools", "office-documents-converter", "excludedExtensions");
+        if (excluded == null || excluded.isBlank()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(excluded.split("\\s+"));
+    }
+
 
     @Override
     public String executePlugin(Path inputPath, Path outputPath, String fileFormat)

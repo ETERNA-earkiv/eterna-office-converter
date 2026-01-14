@@ -15,9 +15,7 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <!-- =============================================== -->
-    <!-- Parent POM (matches image-converter)             -->
-    <!-- =============================================== -->
+
     <parent>
         <groupId>org.roda-project</groupId>
         <artifactId>eterna</artifactId>
@@ -74,7 +72,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Assembly packaging (same as image-converter) -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -99,7 +97,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Force TestNG (RODA standard) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -121,7 +118,6 @@
                 </dependencies>
             </plugin>
 
-            <!-- Shade plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -191,17 +187,5 @@
 
     </dependencies>
 
-    <!-- =============================================== -->
-    <!-- Dependency Management                            -->
-    <!-- =============================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.zookeeper</groupId>
-                <artifactId>zookeeper-jute</artifactId>
-                <version>3.9.3</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>

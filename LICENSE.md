@@ -1,110 +1,160 @@
-# Licensing Information
+GNU Lesser General Public License
+================================
 
-This project uses multiple licenses to cover different components. Please read this file carefully to understand which license applies to which part of the project.
-
-## Base Project License
-
-The core code of this project (excluding dependencies) is licensed under the GNU Lesser General Public License (LGPL) v3.
-Copyright (C) 2024
-White Red Consulting AB / ETERNA Contributors
-
-For the full text of this license, see below.
-
-## ETERNA Office Documents Converter Plugin
-<details open> 
-<summary>ETERNA Office Documents Converter Plugin - LGPLv3 license
-</summary>
-
-### GNU LESSER GENERAL PUBLIC LICENSE
-### Version 3, 29 June 2007
-
-
-Copyright (C) 2007 Free Software Foundation, Inc. http://fsf.org/
+Version 3, 29 June 2007  
+Copyright © 2007 Free Software Foundation, Inc. <https://fsf.org/>
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
 
 This version of the GNU Lesser General Public License incorporates
-the terms and conditions of version 3 of the GNU General Public License,
-supplemented by the additional permissions listed below.
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
 
-(→ Insert full LGPLv3 text here, identical to Image Converter plugin)
+0. Additional Definitions.
 
-</details>
-Dependencies
-Document Conversion Dependencies
-<details> 
-<summary>UnoServer / UnoConvert - Apache License 2.0</summary>
+As used herein, “this License” refers to version 3 of the GNU Lesser
+General Public License, and the “GNU GPL” refers to version 3 of the GNU
+General Public License.
 
-### Apache License 2.0
+“The Library” refers to a covered work governed by this License,
+other than an Application or a Combined Work as defined below.
 
-UnoServer and UnoConvert provide the underlying document conversion capabilities used by this plugin, via headless LibreOffice.
+An “Application” is any work that makes use of an interface provided
+by the Library, but which is not otherwise based on the Library.
+Defining a subclass of a class defined by the Library is deemed a mode
+of using an interface provided by the Library.
 
-License:
-https://www.apache.org/licenses/LICENSE-2.0
+A “Combined Work” is a work produced by combining or linking an
+Application with the Library. The particular version of the Library
+with which the Combined Work was made is also called the “Linked
+Version”.
 
-Permissions include:
+The “Minimal Corresponding Source” for a Combined Work means the
+Corresponding Source for the Combined Work, excluding any source code
+for portions of the Combined Work that, considered in isolation, are
+based on the Application, and not on the Linked Version.
 
-* Use, modify, distribute
+The “Corresponding Application Code” for a Combined Work means the
+object code and/or source code for the Application, including any data
+and utility programs needed for reproducing the Combined Work from the
+Application, but excluding the System Libraries of the Combined Work.
 
-* Private or commercial use
+### 1. Exception to Section 3 of the GNU GPL.
 
-* Patent protection
+You may convey a covered work under sections 3 and 4 of this License
+without being bound by section 3 of the GNU GPL.
 
-Obligations:
+### 2. Conveying Modified Versions.
 
-Preserve copyright notices
+If you modify a copy of the Library, and, in your modifications, a
+facility refers to a function or data to be supplied by an Application
+that uses the facility (other than as an argument passed when the
+facility is invoked), then you may convey a copy of the modified
+version:
 
-Include the Apache 2.0 license
+* **a)** under this License, provided that you make a good faith effort to
+ensure that, in the event an Application does not supply the function
+or data, the facility still operates, and performs whatever part of
+its purpose remains meaningful, or
 
-</details>
-<details> <summary>LibreOffice UNO Runtime - Mozilla Public License 2.0</summary>
+* **b)** under the GNU GPL, with none of the additional permissions of
+this License applicable to that copy.
 
-### Mozilla Public License 2.0 (MPL 2.0)
+### 3. Object Code Incorporating Material from Library Header Files.
 
-LibreOffice and its associated UNO runtime used by UnoServer are licensed under MPL 2.0.
+The object code form of an Application may incorporate material from
+a header file that is part of the Library. You may convey such object
+code under terms of your choice, provided that, if the incorporated
+material is not limited to numerical parameters, data structure
+layouts and accessors, or small macros, inline functions and templates
+(ten or fewer lines in length), you do both of the following:
 
-License:
-https://www.mozilla.org/MPL/2.0/
+* **a)** Give prominent notice with each copy of the object code that the
+Library is used in it and that the Library and its use are covered by
+this License.
 
-Highlights:
+* **b)** Accompany the object code with a copy of the GNU GPL and this
+license document.
 
-* Modifications to MPL-covered files must remain under MPL
+### 4. Combined Works.
 
-* Can be combined with other licenses (weak copyleft)
+You may convey a Combined Work under terms of your choice that,
+taken together, effectively do not restrict modification of the
+portions of the Library contained in the Combined Work and reverse
+engineering for debugging such modifications, if you also do each of
+the following:
 
-</details>
-<details> <summary>Python runtime dependencies used by UnoServer - MIT License</summary>
+* **a)** Give prominent notice with each copy of the Combined Work that
+the Library is used in it and that the Library and its use are
+covered by this License.
 
-### MIT License
+* **b)** Accompany the Combined Work with a copy of the GNU GPL and this
+license document.
 
-UnoServer uses several Python libraries that are MIT-licensed.
+* **c)** For a Combined Work that displays copyright notices during
+execution, include the copyright notice for the Library among
+these notices, as well as a reference directing the user to the
+copies of the GNU GPL and this license document.
 
-Permissions:
+* **d)** Do one of the following:
 
-* Use, copy, modify, merge, publish, distribute
+  - **1)** Convey the Minimal Corresponding Source under the terms of this
+     License, and the Corresponding Application Code in a form suitable
+     for, and under terms that permit, the user to recombine or relink
+     the Application with a modified version of the Linked Version to
+     produce a modified Combined Work, in the manner specified by
+     section 6 of the GNU GPL for conveying Corresponding Source.
 
-Conditions:
+  - **2)** Use a suitable shared library mechanism for linking with the
+     Library. A suitable mechanism is one that (a) uses at run time a
+     copy of the Library already present on the user's computer system,
+     and (b) will operate properly with a modified version of the
+     Library that is interface-compatible with the Linked Version.
 
-* Include copyright
+* **e)** Provide Installation Information, but only if you would otherwise
+be required to provide such information under section 6 of the
+GNU GPL, and only to the extent that such information is necessary
+to install and execute a modified version of the Combined Work
+produced by recombining or relinking the Application with a
+modified version of the Linked Version.
 
-* Include license text
+### 5. Combined Libraries.
 
-</details>
-Summary Table
-Component	License Type	Notes
-Office Documents Converter plugin (Java)	LGPLv3	Applies only to plugin source code
-UnoServer / UnoConvert	Apache 2.0	External component, not redistributed
-LibreOffice UNO runtime	MPL 2.0	LibreOffice license
-Python dependencies of UnoServer	MIT	External libraries
-Additional Notes
+You may place library facilities that are a work based on the
+Library side by side in a single library together with other
+library facilities that are not Applications and are not covered
+by this License, and convey such a combined library under terms of
+your choice, if you do both of the following:
 
-This plugin only communicates with the UnoServer container; it does not distribute LibreOffice, Python, or UnoServer binaries.
+* **a)** Accompany the combined library with a copy of the same work
+based on the Library, uncombined with any other library facilities,
+conveyed under the terms of this License.
 
-Redistribution of LibreOffice components must comply with the Mozilla Public License 2.0.
+* **b)** Give prominent notice with the combined library that part of it
+is a work based on the Library, and explaining where to find the
+accompanying uncombined form of the same work.
 
-The plugin generates derivative output files (PDF, ODT, etc.) via external conversion tools and does not modify or link to those tools internally.
+### 6. Revised Versions of the GNU Lesser General Public License.
 
-### Full LGPLv3 License Text
+The Free Software Foundation may publish revised and/or new versions
+of the GNU Lesser General Public License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.
 
-(Insert same LGPLv3 license text from your Image Converter plugin to maintain consistency.)
+Each version is given a distinguishing version number. If the
+Library as you received it specifies that a certain numbered
+version of the GNU Lesser General Public License “or any later
+version” applies to it, you have the option of following the terms
+and conditions either of that published version or of any later
+version published by the Free Software Foundation. If the Library
+as you received it does not specify a version number of the GNU
+Lesser General Public License, you may choose any version of the
+GNU Lesser General Public License ever published by the Free
+Software Foundation.
+
+If the Library as you received it specifies that a proxy can decide
+whether future versions of the GNU Lesser General Public License
+shall apply, that proxy's public statement of acceptance of any
+version is permanent authorization for you to choose that version
+for the Library.
