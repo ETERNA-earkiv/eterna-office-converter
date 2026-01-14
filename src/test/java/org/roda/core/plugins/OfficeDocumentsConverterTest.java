@@ -38,7 +38,7 @@ import org.roda.core.index.IndexService;
 import org.roda.core.index.IndexTestUtils;
 import org.roda.core.model.ModelService;
 import org.roda.core.plugins.base.characterization.SiegfriedPlugin;
-import org.roda.core.plugins.external.OfficeDocumentsConverter;
+import se.whitered.eterna.plugins.officedocumentsconverter.OfficeDocumentsConverter;
 import org.roda.core.storage.ContentPayload;
 import org.roda.core.storage.fs.FSPathContentPayload;
 import org.roda.core.storage.fs.FSUtils;

@@ -158,7 +158,7 @@
   <properties>
     <build.date>${maven.build.timestamp}</build.date>
     <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
-    <RODA_PLUGIN>org.roda.core.plugins.external.OfficeDocumentsConverter</RODA_PLUGIN>
+    <RODA_PLUGIN>se.whitered.eterna.plugins.officedocumentsconverter.OfficeDocumentsConverter</RODA_PLUGIN>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java_version>21</java_version>
   </properties>

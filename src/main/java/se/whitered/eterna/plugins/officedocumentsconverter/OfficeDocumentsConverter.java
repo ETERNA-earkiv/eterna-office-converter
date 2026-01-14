@@ -2,7 +2,7 @@
  * The contents of this file are subject to the license and copyright
  * detailed in the LICENSE.md file at the root of the source tree.
  */
-package org.roda.core.plugins.external;
+package se.whitered.eterna.plugins.officedocumentsconverter;
 
 import org.roda.core.RodaCoreFactory;
 import org.roda.core.common.FileFormatUtils;
