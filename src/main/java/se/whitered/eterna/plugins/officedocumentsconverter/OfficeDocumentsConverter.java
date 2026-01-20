@@ -202,24 +202,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         }
 
         /* ------------------------------------------------------------------
-         * 1. Resolve UNO container name automatically
-         * ------------------------------------------------------------------ */
-        String unoContainer = resolveUnoContainer();
-        LOGGER.info("Using UNO container: {}", unoContainer);
-
-        /* ------------------------------------------------------------------
-         * 2. Prepare shared /tmp working directory
-         * ------------------------------------------------------------------ */
-        Path sharedTmp = Paths.get("/tmp/roda-converter");
-        Files.createDirectories(sharedTmp);
-
-        String safeName = inputPath.getFileName().toString().replaceAll("\\s+", "_");
-        Path containerInput = sharedTmp.resolve(safeName);
-
-        Files.copy(inputPath, containerInput, StandardCopyOption.REPLACE_EXISTING);
-
-        /* ------------------------------------------------------------------
-         * 3. PDF/A handling
+         * 1. PDF/A handling
          * ------------------------------------------------------------------ */
         String unoFormat = outputFormat;
         List<String> exportOptions = new ArrayList<>();
@@ -230,20 +213,18 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 case "pdfa-1b" -> exportOptions.add("SelectPdfVersion=1");
                 case "pdfa-2b" -> exportOptions.add("SelectPdfVersion=2");
                 case "pdfa-3b" -> exportOptions.add("SelectPdfVersion=3");
-                default -> throw new CommandException("Unsupported PDF/A profile: " + outputFormat);
+                default -> throw new CommandException(
+                        "Unsupported PDF/A profile: " + outputFormat
+                );
             }
         }
 
-        Path containerOutput = sharedTmp.resolve(
-                "converted_" + System.nanoTime() + "." + unoFormat
-        );
-
         /* ------------------------------------------------------------------
-         * 4. Build docker exec unoconvert command
+         * 2. Build unoconvert command (LOCAL)
          * ------------------------------------------------------------------ */
         List<String> command = new ArrayList<>();
+
         command.addAll(List.of(
-                "docker", "exec", unoContainer,
                 "unoconvert",
                 "--host", host,
                 "--port", port,
@@ -255,8 +236,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             command.add(String.join(",", exportOptions));
         }
 
-        command.add(containerInput.toString());
-        command.add(containerOutput.toString());
+        command.add(inputPath.toString());
+        command.add(outputPath.toString());
 
         LOGGER.info("Executing: {}", String.join(" ", command));
 
@@ -280,45 +261,15 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             throw new CommandException("Unoconvert failed:\n" + processOutput);
         }
 
-        /* ------------------------------------------------------------------
-         * 5. Copy result back to RODA output path
-         * ------------------------------------------------------------------ */
-        Files.copy(containerOutput, outputPath, StandardCopyOption.REPLACE_EXISTING);
-
-        Files.deleteIfExists(containerInput);
-        Files.deleteIfExists(containerOutput);
+        if (!Files.exists(outputPath) || Files.size(outputPath) == 0) {
+            throw new CommandException(
+                    "Unoconvert finished but output file is missing or empty"
+            );
+        }
 
         LOGGER.info("Conversion successful → {}", outputPath);
         return outputPath.toString();
     }
-
-    private String resolveUnoContainer() throws CommandException {
-        try {
-            Process p = new ProcessBuilder(
-                    "docker", "ps",
-                    "--filter", "ancestor=philiplehmann/unoserver",
-                    "--format", "{{.Names}}"
-            ).start();
-
-            List<String> lines = new String(
-                    p.getInputStream().readAllBytes(), StandardCharsets.UTF_8
-            ).lines().toList();
-
-            if (lines.isEmpty()) {
-                throw new CommandException(
-                        "UNO server container not running (philiplehmann/unoserver)"
-                );
-            }
-
-            return lines.get(0); // first matching container
-
-        } catch (IOException e) {
-            throw new CommandException("Failed to resolve UNO container", e);
-        }
-    }
-
-
-
 
     private String getEnvOrDefault(String key, String def) {
         String v = System.getenv(key);
