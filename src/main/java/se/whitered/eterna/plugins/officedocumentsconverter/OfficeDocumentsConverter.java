@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -250,14 +251,19 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
         int exitCode;
         try {
-            exitCode = process.waitFor();
+            boolean finished = process.waitFor(5, TimeUnit.MINUTES);
+            if (!finished) {
+                process.destroyForcibly();
+                throw new CommandException("unoconvert timed out after 5 minutes");
+            }
+            exitCode = process.exitValue();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
 
         if (exitCode != 0) {
-            LOGGER.error("unoconvert failed:\n{}", processOutput);
+            LOGGER.error("unoconvert failed (host={}, port={}):\n{}", host, port, processOutput);
             throw new CommandException("Unoconvert failed:\n" + processOutput);
         }
 
