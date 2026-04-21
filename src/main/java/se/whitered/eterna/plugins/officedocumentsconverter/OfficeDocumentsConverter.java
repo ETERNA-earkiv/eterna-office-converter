@@ -250,19 +250,18 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         // Write input file to stdin in a separate thread to avoid deadlock.
         AtomicReference<IOException> stdinError = new AtomicReference<>();
         Thread stdinWriter = new Thread(
-                "unoconvert-stdin-" + inputPath.getFileName(),
                 () -> {
                     try (OutputStream stdin = process.getOutputStream()) {
                         Files.copy(inputPath, stdin);
                     } catch (IOException e) {
                         stdinError.set(e);
                     }
-                });
+                },
+                "unoconvert-stdin-" + inputPath.getFileName());
         stdinWriter.start();
 
         AtomicReference<String> stderrContent = new AtomicReference<>("");
         Thread stderrReader = new Thread(
-                "unoconvert-stderr-" + inputPath.getFileName(),
                 () -> {
                     try {
                         stderrContent.set(
@@ -270,19 +269,20 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                     } catch (IOException e) {
                         LOGGER.warn("Failed to read unoconvert stderr", e);
                     }
-                });
+                },
+                "unoconvert-stderr-" + inputPath.getFileName());
         stderrReader.start();
 
         AtomicReference<IOException> stdoutError = new AtomicReference<>();
         Thread stdoutDrainer = new Thread(
-                "unoconvert-stdout-" + outputPath.getFileName(),
                 () -> {
                     try {
                         Files.copy(process.getInputStream(), outputPath, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
                         stdoutError.set(e);
                     }
-                });
+                },
+                "unoconvert-stdout-" + outputPath.getFileName());
         stdoutDrainer.start();
 
         int exitCode;
