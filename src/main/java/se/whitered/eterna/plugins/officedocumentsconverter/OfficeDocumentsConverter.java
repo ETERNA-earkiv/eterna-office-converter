@@ -17,17 +17,16 @@ import org.roda.core.model.ModelService;
 import org.roda.core.plugins.Plugin;
 import org.roda.core.plugins.PluginException;
 import org.roda.core.plugins.base.conversion.AbstractConvertPlugin;
-import org.roda.core.storage.StorageService;
 import org.roda.core.util.CommandException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -147,12 +146,12 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
     }
 
     @Override
-    public Report beforeAllExecute(IndexService index, ModelService model, StorageService storage) {
+    public Report beforeAllExecute(IndexService index, ModelService model) {
         return new Report();
     }
 
     @Override
-    public Report afterAllExecute(IndexService index, ModelService model, StorageService storage) {
+    public Report afterAllExecute(IndexService index, ModelService model) {
         return new Report();
     }
 
@@ -211,7 +210,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         if (outputFormat.startsWith("pdfa-")) {
             unoFormat = "pdf";
             switch (outputFormat) {
-                case "pdfa-1b" -> exportOptions.add("SelectPdfVersion=1");
+                case "pdfa-1a", "pdfa-1b" -> exportOptions.add("SelectPdfVersion=1");
                 case "pdfa-2b" -> exportOptions.add("SelectPdfVersion=2");
                 case "pdfa-3b" -> exportOptions.add("SelectPdfVersion=3");
                 default -> throw new CommandException(
@@ -221,7 +220,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         }
 
         /* ------------------------------------------------------------------
-         * 2. Build unoconvert command (LOCAL)
+         * 2. Build unoconvert command using stdin/stdout so no file paths
+         *    are shared with the unoserver container.
          * ------------------------------------------------------------------ */
         List<String> command = new ArrayList<>();
 
@@ -237,17 +237,25 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             command.add(String.join(",", exportOptions));
         }
 
-        command.add(inputPath.toString());
-        command.add(outputPath.toString());
+        command.add("-");  // read input from stdin
+        command.add("-");  // write output to stdout
 
         LOGGER.info("Executing: {}", String.join(" ", command));
 
-        Process process = new ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .start();
+        Process process = new ProcessBuilder(command).start();
 
-        String processOutput =
-                new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        // Write input file to stdin in a separate thread to avoid deadlock.
+        Thread stdinWriter = new Thread(() -> {
+            try (OutputStream stdin = process.getOutputStream()) {
+                Files.copy(inputPath, stdin);
+            } catch (IOException e) {
+                LOGGER.warn("Error writing to unoconvert stdin", e);
+            }
+        });
+        stdinWriter.start();
+
+        byte[] outputBytes = process.getInputStream().readAllBytes();
+        String errorOutput = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
 
         int exitCode;
         try {
@@ -257,21 +265,22 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 throw new CommandException("unoconvert timed out after 5 minutes");
             }
             exitCode = process.exitValue();
+            stdinWriter.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
 
         if (exitCode != 0) {
-            LOGGER.error("unoconvert failed (host={}, port={}):\n{}", host, port, processOutput);
-            throw new CommandException("Unoconvert failed:\n" + processOutput);
+            LOGGER.error("unoconvert failed (host={}, port={}):\n{}", host, port, errorOutput);
+            throw new CommandException("Unoconvert failed:\n" + errorOutput);
         }
 
-        if (!Files.exists(outputPath) || Files.size(outputPath) == 0) {
-            throw new CommandException(
-                    "Unoconvert finished but output file is missing or empty"
-            );
+        if (outputBytes.length == 0) {
+            throw new CommandException("Unoconvert finished but produced no output");
         }
+
+        Files.write(outputPath, outputBytes);
 
         LOGGER.info("Conversion successful → {}", outputPath);
         return outputPath.toString();
