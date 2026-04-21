@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -245,13 +246,16 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         Process process = new ProcessBuilder(command).start();
 
         // Write input file to stdin in a separate thread to avoid deadlock.
-        Thread stdinWriter = new Thread(() -> {
-            try (OutputStream stdin = process.getOutputStream()) {
-                Files.copy(inputPath, stdin);
-            } catch (IOException e) {
-                LOGGER.warn("Error writing to unoconvert stdin", e);
-            }
-        });
+        AtomicReference<IOException> stdinError = new AtomicReference<>();
+        Thread stdinWriter = new Thread(
+                "unoconvert-stdin-" + inputPath.getFileName(),
+                () -> {
+                    try (OutputStream stdin = process.getOutputStream()) {
+                        Files.copy(inputPath, stdin);
+                    } catch (IOException e) {
+                        stdinError.set(e);
+                    }
+                });
         stdinWriter.start();
 
         StringBuilder stderrBuffer = new StringBuilder();
@@ -278,6 +282,9 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             }
             exitCode = process.exitValue();
             stdinWriter.join();
+            if (stdinError.get() != null) {
+                throw new CommandException("Failed to write input to unoconvert stdin", stdinError.get());
+            }
             // stderrReader.join() anropas efter waitFor (Task 3 hanterar join med timeout)
             stderrReader.join();
         } catch (InterruptedException e) {
