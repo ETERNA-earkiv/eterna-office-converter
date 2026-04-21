@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -255,17 +254,20 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         });
         stdinWriter.start();
 
-        CompletableFuture<String> stderrFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                return new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                LOGGER.warn("Failed to read unoconvert stderr", e);
-                return "";
-            }
-        });
+        StringBuilder stderrBuffer = new StringBuilder();
+        Thread stderrReader = new Thread(
+                "unoconvert-stderr-" + inputPath.getFileName(),
+                () -> {
+                    try {
+                        stderrBuffer.append(
+                            new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        LOGGER.warn("Failed to read unoconvert stderr", e);
+                    }
+                });
+        stderrReader.start();
 
         byte[] outputBytes = process.getInputStream().readAllBytes();
-        String errorOutput = stderrFuture.join();
 
         int exitCode;
         try {
@@ -276,10 +278,14 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             }
             exitCode = process.exitValue();
             stdinWriter.join();
+            // stderrReader.join() anropas efter waitFor (Task 3 hanterar join med timeout)
+            stderrReader.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
+
+        String errorOutput = stderrBuffer.toString();
 
         if (exitCode != 0) {
             LOGGER.error("unoconvert failed (host={}, port={}):\n{}", host, port, errorOutput);
