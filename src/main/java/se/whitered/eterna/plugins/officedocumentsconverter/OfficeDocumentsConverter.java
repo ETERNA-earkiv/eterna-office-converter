@@ -278,16 +278,28 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             boolean finished = process.waitFor(5, TimeUnit.MINUTES);
             if (!finished) {
                 process.destroyForcibly();
+                stdinWriter.interrupt();
+                stderrReader.interrupt();
                 throw new CommandException("unoconvert timed out after 5 minutes");
             }
             exitCode = process.exitValue();
-            stdinWriter.join();
+            stdinWriter.join(10_000);
+            if (stdinWriter.isAlive()) {
+                stdinWriter.interrupt();
+                LOGGER.warn("stdin-writer did not finish within 10s after process exit");
+            }
             if (stdinError.get() != null) {
                 throw new CommandException("Failed to write input to unoconvert stdin", stdinError.get());
             }
-            // stderrReader.join() anropas efter waitFor (Task 3 hanterar join med timeout)
-            stderrReader.join();
+            stderrReader.join(10_000);
+            if (stderrReader.isAlive()) {
+                stderrReader.interrupt();
+                LOGGER.warn("stderr-reader did not finish within 10s after process exit");
+            }
         } catch (InterruptedException e) {
+            process.destroyForcibly();
+            stdinWriter.interrupt();
+            stderrReader.interrupt();
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
