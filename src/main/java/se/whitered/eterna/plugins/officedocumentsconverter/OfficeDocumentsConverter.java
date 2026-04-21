@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -254,8 +255,17 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         });
         stdinWriter.start();
 
+        CompletableFuture<String> stderrFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                return new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                LOGGER.warn("Failed to read unoconvert stderr", e);
+                return "";
+            }
+        });
+
         byte[] outputBytes = process.getInputStream().readAllBytes();
-        String errorOutput = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+        String errorOutput = stderrFuture.join();
 
         int exitCode;
         try {
