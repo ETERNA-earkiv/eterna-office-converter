@@ -212,6 +212,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         if (outputFormat.startsWith("pdfa-")) {
             unoFormat = "pdf";
             switch (outputFormat) {
+                // LibreOffice maps both PDF/A-1a and 1b to SelectPdfVersion=1;
+                // full 1a conformance (tagged PDF) requires additional document config.
                 case "pdfa-1a", "pdfa-1b" -> exportOptions.add("SelectPdfVersion=1");
                 case "pdfa-2b" -> exportOptions.add("SelectPdfVersion=2");
                 case "pdfa-3b" -> exportOptions.add("SelectPdfVersion=3");
