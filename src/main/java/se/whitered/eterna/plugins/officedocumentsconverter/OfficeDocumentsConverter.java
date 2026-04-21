@@ -75,12 +75,14 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
     @Override
     public String getName() {
-        return "Office Document Converter";
+        return "Konvertering av kontorsdokument";
     }
 
     @Override
     public String getDescription() {
-        return "Converts Word, Excel, PowerPoint and other office formats to preservation formats via UNO server.";
+        return "Konverterar kontorsdokument (Word, Excel, PowerPoint m.fl.) till digitala bevarandeformat via UNO-server. "
+                + "St\u00f6der PDF/A-1 (ISO 19005-1:2005) i enlighet med Riksarkivets krav f\u00f6r kontorsdokument (RA-FS), "
+                + "samt PDF/A-2, PDF/A-3 och ett flertal redigerbara \u00f6ppna format.";
     }
 
     @Override
