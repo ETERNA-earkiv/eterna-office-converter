@@ -48,6 +48,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
     private static final String CONVERSION_PROFILE_PARAM_KEY = "parameter.conversion_profile";
 
+    private String conversionProfile = "";
+
     private static final Map<String, PluginParameter> pluginParameters = new LinkedHashMap<>();
 
     static {
@@ -122,8 +124,12 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                     "Required conversion profile parameter '" + CONVERSION_PROFILE_PARAM_KEY + "' is missing.");
         }
         profileValue = profileValue.trim().toLowerCase();
+        this.conversionProfile = profileValue;
+        // PDF/A variants are all PDF files — use "pdf" as the file extension so the
+        // parent class names the output file correctly (e.g. document.pdf, not document.pdfa-1b).
+        String fileExtension = profileValue.startsWith("pdfa-") ? "pdf" : profileValue;
         parameters.put("parameter.option." + profileValue, "[parameter.output_format]");
-        parameters.put(RodaConstants.PLUGIN_PARAMS_OUTPUT_FORMAT, profileValue);
+        parameters.put(RodaConstants.PLUGIN_PARAMS_OUTPUT_FORMAT, fileExtension);
         LOGGER.debug("Setting output format from conversion profile parameter '{}': {}", CONVERSION_PROFILE_PARAM_KEY,
                 profileValue);
         super.setParameterValues(parameters);
@@ -197,7 +203,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         String host = getEnvOrDefault("UNOSERVER_HOST", "localhost");
         String port = getEnvOrDefault("UNOSERVER_PORT", "2003");
 
-        String outputFormat = super.getOutputFormat();
+        String outputFormat = conversionProfile.isBlank() ? super.getOutputFormat() : conversionProfile;
         if (outputFormat == null || outputFormat.isBlank()) {
             throw new CommandException("Output format was not set.");
         }
