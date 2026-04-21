@@ -1,6 +1,8 @@
 Office Documents Converter
 -------------------------
 
+[🇸🇪 Svenska](README_sv_SE.md)
+
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](LICENSE.md)
 
 A plugin for ETERNA providing conversion of office document formats into preservation-friendly formats.  
