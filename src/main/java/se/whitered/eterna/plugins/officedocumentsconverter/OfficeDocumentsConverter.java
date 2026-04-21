@@ -292,6 +292,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 stdinWriter.interrupt();
                 stderrReader.interrupt();
                 stdoutDrainer.interrupt();
+                try { Files.deleteIfExists(outputPath); } catch (IOException ignored) {}
                 throw new CommandException("unoconvert timed out after 5 minutes");
             }
             exitCode = process.exitValue();
@@ -303,6 +304,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             if (stdinError.get() != null) {
                 stderrReader.interrupt();
                 stdoutDrainer.interrupt();
+                try { Files.deleteIfExists(outputPath); } catch (IOException ignored) {}
                 throw new CommandException("Failed to write input to unoconvert stdin", stdinError.get());
             }
             stderrReader.join(10_000);
@@ -313,7 +315,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             stdoutDrainer.join(30_000);
             if (stdoutDrainer.isAlive()) {
                 stdoutDrainer.interrupt();
-                LOGGER.warn("stdout-drainer did not finish within 30s after process exit");
+                Files.deleteIfExists(outputPath);
+                throw new CommandException("unoconvert stdout drainer did not finish within 30s");
             }
             if (stdoutError.get() != null) {
                 Files.deleteIfExists(outputPath);
@@ -324,6 +327,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             stdinWriter.interrupt();
             stderrReader.interrupt();
             stdoutDrainer.interrupt();
+            try { Files.deleteIfExists(outputPath); } catch (IOException ignored) {}
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
