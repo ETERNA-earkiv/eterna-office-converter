@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -271,7 +272,17 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 });
         stderrReader.start();
 
-        byte[] outputBytes = process.getInputStream().readAllBytes();
+        AtomicReference<IOException> stdoutError = new AtomicReference<>();
+        Thread stdoutDrainer = new Thread(
+                "unoconvert-stdout-" + outputPath.getFileName(),
+                () -> {
+                    try {
+                        Files.copy(process.getInputStream(), outputPath, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        stdoutError.set(e);
+                    }
+                });
+        stdoutDrainer.start();
 
         int exitCode;
         try {
@@ -280,6 +291,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 process.destroyForcibly();
                 stdinWriter.interrupt();
                 stderrReader.interrupt();
+                stdoutDrainer.interrupt();
                 throw new CommandException("unoconvert timed out after 5 minutes");
             }
             exitCode = process.exitValue();
@@ -290,6 +302,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             }
             if (stdinError.get() != null) {
                 stderrReader.interrupt();
+                stdoutDrainer.interrupt();
                 throw new CommandException("Failed to write input to unoconvert stdin", stdinError.get());
             }
             stderrReader.join(10_000);
@@ -297,10 +310,20 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 stderrReader.interrupt();
                 LOGGER.warn("stderr-reader did not finish within 10s after process exit");
             }
+            stdoutDrainer.join(30_000);
+            if (stdoutDrainer.isAlive()) {
+                stdoutDrainer.interrupt();
+                LOGGER.warn("stdout-drainer did not finish within 30s after process exit");
+            }
+            if (stdoutError.get() != null) {
+                Files.deleteIfExists(outputPath);
+                throw new CommandException("Failed to write unoconvert output to file", stdoutError.get());
+            }
         } catch (InterruptedException e) {
             process.destroyForcibly();
             stdinWriter.interrupt();
             stderrReader.interrupt();
+            stdoutDrainer.interrupt();
             Thread.currentThread().interrupt();
             throw new CommandException("Conversion interrupted", e);
         }
@@ -316,11 +339,9 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
             throw new CommandException("Unoconvert failed:\n" + errorOutput);
         }
 
-        if (outputBytes.length == 0) {
+        if (!Files.exists(outputPath) || Files.size(outputPath) == 0) {
             throw new CommandException("Unoconvert finished but produced no output");
         }
-
-        Files.write(outputPath, outputBytes);
 
         LOGGER.info("Conversion successful → {}", outputPath);
         return outputPath.toString();
