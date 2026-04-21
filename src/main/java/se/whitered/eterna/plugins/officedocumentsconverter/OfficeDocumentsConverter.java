@@ -289,6 +289,7 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
                 LOGGER.warn("stdin-writer did not finish within 10s after process exit");
             }
             if (stdinError.get() != null) {
+                stderrReader.interrupt();
                 throw new CommandException("Failed to write input to unoconvert stdin", stdinError.get());
             }
             stderrReader.join(10_000);
