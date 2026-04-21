@@ -295,6 +295,10 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
         String errorOutput = stderrBuffer.toString();
 
         if (exitCode != 0) {
+            IOException stdinEx = stdinError.get();
+            if (stdinEx != null) {
+                LOGGER.error("unoconvert stdin write failed before process exited", stdinEx);
+            }
             LOGGER.error("unoconvert failed (host={}, port={}):\n{}", host, port, errorOutput);
             throw new CommandException("Unoconvert failed:\n" + errorOutput);
         }
