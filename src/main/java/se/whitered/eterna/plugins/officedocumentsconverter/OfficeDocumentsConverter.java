@@ -87,7 +87,8 @@ public class OfficeDocumentsConverter<T extends IsRODAObject> extends AbstractCo
 
     @Override
     public String getVersionImpl() {
-        return "1.0.0";
+        String version = getClass().getPackage().getImplementationVersion();
+        return version != null ? version : "unknown";
     }
 
     @Override
