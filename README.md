@@ -18,6 +18,7 @@ This plugin normalizes commonly used office documents into standardized formats 
     - Microsoft Word (`.doc`, `.docx`)
     - Microsoft Excel (`.xls`, `.xlsx`)
     - Microsoft PowerPoint (`.ppt`, `.pptx`)
+    - PDF files (`.pdf`)
     - OpenDocument formats (`.odt`, `.ods`, `.odp`)
     - Plain text files (`.txt`)
 

@@ -18,6 +18,7 @@ Pluginet normaliserar vanliga kontorsdokument till standardiserade format lämpl
     - Microsoft Word (`.doc`, `.docx`)
     - Microsoft Excel (`.xls`, `.xlsx`)
     - Microsoft PowerPoint (`.ppt`, `.pptx`)
+    - PDF filer (.pdf)
     - OpenDocument-format (`.odt`, `.ods`, `.odp`)
     - Oformaterade textfiler (`.txt`)
 
