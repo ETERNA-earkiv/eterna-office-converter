@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1]
+### Added
+- PDF files as input
+  
 ## [1.1.0]
 ### Added
 - PDF/A-1a support alongside existing PDF/A-1b
